@@ -1,4 +1,6 @@
-./clips
-./downloads
+clips/
+downloads/
 .env
 packages.txt
+__pycache__/
+*.py[cod]
