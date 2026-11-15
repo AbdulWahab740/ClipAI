@@ -1,5 +1,5 @@
 streamlit
-grop
+groq
 faster-whisper
 yt-dlp
 numpy
