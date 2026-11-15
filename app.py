@@ -9,6 +9,8 @@ import streamlit as st
 from groq import Groq
 
 import core
+from ffbin import FFMPEG
+
 st.set_page_config(page_title="ClipAI", page_icon="✂️", layout="wide")
 
 # ---------------------------------------------------------------- look
@@ -40,7 +42,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-if not shutil.which("ffmpeg"):
+if not FFMPEG:
     st.error("ffmpeg is not installed. Windows: run `winget install Gyan.FFmpeg` and open a new "
              "terminal. Mac: `brew install ffmpeg`. Linux: `sudo apt install ffmpeg`.")
     st.stop()

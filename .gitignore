@@ -1,6 +1,6 @@
-clips/
 downloads/
-.env
-packages.txt
+clips/
+.streamlit/secrets.toml
 __pycache__/
-*.py[cod]
+*.pyc
+cookies.txt

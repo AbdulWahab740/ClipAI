@@ -1,5 +1,5 @@
-streamlit
-grop
-faster-whisper
-yt-dlp
+streamlit>=1.40
+groq
+yt-dlp[default]
 numpy
+imageio-ffmpeg

@@ -4,6 +4,8 @@ import wave
 
 import numpy as np
 
+from ffbin import FFMPEG
+
 
 def _surprise(x, win=31):
     """How much each second stands out from the normal level around it."""
@@ -33,7 +35,7 @@ def motion_per_second(video_path, fps=2):
     """How much the picture changes, per second."""
     w, h = 64, 36
     cmd = [
-        "ffmpeg", "-v", "error", "-i", str(video_path),
+        FFMPEG, "-v", "error", "-i", str(video_path),
         "-vf", f"fps={fps},scale={w}:{h},format=gray",
         "-f", "rawvideo", "-pix_fmt", "gray", "-",
     ]

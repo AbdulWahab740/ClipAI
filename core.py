@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import gameplay
+from ffbin import FFMPEG
 
 ERRORS = []  # every API error is kept here so the app can explain what went wrong
 WORKERS = 3  # how many requests run at the same time
@@ -85,6 +86,8 @@ def download_youtube(url, out_dir, height=720, cookie_file=None, browser=None):
         "concurrent_fragment_downloads": 4,  # faster downloads
         "socket_timeout": 30,
     }
+    if FFMPEG:
+        opts["ffmpeg_location"] = FFMPEG
     if cookie_file:
         opts["cookiefile"] = cookie_file
     elif browser:
@@ -101,7 +104,7 @@ def download_youtube(url, out_dir, height=720, cookie_file=None, browser=None):
 def extract_audio_parts(video, out_dir, part_sec=600):
     """Small mp3 pieces (10 min each) so they upload fast and fit Groq's file limit."""
     run([
-        "ffmpeg", "-y", "-i", str(video), "-vn", "-ac", "1", "-ar", "16000",
+        FFMPEG, "-y", "-i", str(video), "-vn", "-ac", "1", "-ar", "16000",
         "-c:a", "libmp3lame", "-b:a", "32k", "-f", "segment",
         "-segment_time", str(part_sec), "-reset_timestamps", "1",
         str(out_dir / "part_%03d.mp3"),
@@ -295,7 +298,7 @@ def grab_frames(video, start, end, n=4):
     for k in range(n):
         t = start + (end - start) * (k + 0.5) / n
         out = tmp / f"f{k}.jpg"
-        run(["ffmpeg", "-y", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1",
+        run([FFMPEG, "-y", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1",
              "-vf", "scale=512:-2", "-q:v", "5", str(out)])
         frames.append(base64.b64encode(out.read_bytes()).decode())
     return frames
@@ -315,7 +318,7 @@ def judge_clip(client, model, video, start, end):
 def gameplay_clips(client, vision_model, video, work, num_clips, min_len, max_len, on_progress):
     on_progress(0.02, "Listening for loud moments")
     wav = work / "audio.wav"
-    run(["ffmpeg", "-y", "-i", str(video), "-vn", "-ac", "1", "-ar", "16000", str(wav)])
+    run([FFMPEG, "-y", "-i", str(video), "-vn", "-ac", "1", "-ar", "16000", str(wav)])
     on_progress(0.15, "Watching for fast action")
     score = gameplay.excitement_score(video, wav)
     if len(score) == 0:
@@ -356,7 +359,7 @@ def gameplay_clips(client, vision_model, video, work, num_clips, min_len, max_le
 # ---------------------------------------------------------------- cutting
 def cut_clip(video, start, end, out_path, vertical=False):
     vf = ["-vf", "crop=ih*9/16:ih,scale=1080:1920"] if vertical else []
-    run(["ffmpeg", "-y", "-ss", f"{start:.2f}", "-i", str(video), "-t", f"{end - start:.2f}",
+    run([FFMPEG, "-y", "-ss", f"{start:.2f}", "-i", str(video), "-t", f"{end - start:.2f}",
          *vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
          "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(out_path)])
 
